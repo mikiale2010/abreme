@@ -14,6 +14,7 @@
     --shadow: 0 18px 50px rgba(0,0,0,.22);
   }
   *{box-sizing:border-box}
+
   body{
     margin:0;height:100vh;overflow:hidden;
     display:flex;align-items:center;justify-content:center;
@@ -47,11 +48,23 @@
     box-shadow: var(--shadow);
     position:relative;
     z-index:2;
-    transform: translateY(10px);
-    opacity:0;
-    animation: popIn .7s ease forwards;
+
+    /* Transición global del “card” */
+    transform: translateY(0) scale(1);
+    opacity:1;
+    transition: opacity .35s ease, transform .35s ease;
+    will-change: transform, opacity;
   }
-  @keyframes popIn{ to{ transform: translateY(0); opacity:1; } }
+
+  /* estados para transiciones */
+  .fadeOut{
+    opacity:0;
+    transform: translateY(10px) scale(.985);
+  }
+  .fadeIn{
+    opacity:1;
+    transform: translateY(0) scale(1);
+  }
 
   h1{ margin:0 0 10px; color: var(--red); letter-spacing:.2px; }
   .sub{ margin: 0 0 16px; color:#666; line-height:1.35; }
@@ -61,10 +74,11 @@
     margin: 6px 0 14px;
     text-shadow: 0 6px 18px rgba(255,77,109,.25);
     animation: shimmer 2.2s ease-in-out infinite;
+    will-change: transform;
   }
   @keyframes shimmer{
     0%,100%{ transform: translateY(0); filter: saturate(1); }
-    50%{ transform: translateY(-1px); filter: saturate(1.2); }
+    50%{ transform: translateY(-1px); filter: saturate(1.15); }
   }
 
   .pill{
@@ -76,8 +90,6 @@
 
   .mini{ font-size: 12px; color:#8a8a8a; margin-top: 10px; line-height:1.25; }
 
-  .btnRow{ margin-top: 8px; }
-
   button{
     padding: 14px 24px;
     font-size: 18px;
@@ -88,8 +100,10 @@
     transition: transform .18s ease, box-shadow .18s ease, filter .18s ease;
     user-select:none;
     box-shadow: 0 10px 18px rgba(0,0,0,.12);
+    will-change: transform;
   }
   button:active{ transform: translateY(1px) scale(.99); }
+  button:hover{ transform: translateY(-1px); box-shadow: 0 14px 26px rgba(0,0,0,.16); }
 
   #play{
     background: linear-gradient(135deg, var(--pink), #ff7aa2);
@@ -107,7 +121,6 @@
   #si{
     background: linear-gradient(135deg, var(--red), var(--pink));
     color: white;
-    position:relative;
     animation: heartBeat 1.3s ease-in-out infinite;
   }
   @keyframes heartBeat{
@@ -115,40 +128,38 @@
     50%{ transform: scale(1.03); }
   }
 
-  /* El NO será “escapista” */
+  /* El NO escapista, pero con movimiento suave */
   #no{
     background: linear-gradient(135deg, #b9c0c7, var(--gray));
     color: white;
-    position: fixed;        /* clave para moverse por toda la pantalla */
+    position: fixed;
     left: 50%;
     top: 50%;
-    transform: translate(-50%, -50%);
+    transform: translate3d(-50%, -50%, 0);
     z-index: 4;
-    display:none;           /* aparece solo en la pantalla de la pregunta */
-  }
+    display:none;
 
-  button:hover{ transform: translateY(-1px); box-shadow: 0 14px 26px rgba(0,0,0,.16); }
+    transition: transform .22s ease;
+    will-change: transform;
+    touch-action: none;
+  }
 
   .final{ font-size: 24px; color: var(--red); line-height: 1.25; margin: 6px 0 0; }
   .final strong{ color: var(--pink); }
-
   .loveLine{ margin-top: 14px; font-size: 13px; color:#6a6a6a; }
 
   /* floating hearts layer */
-  .hearts{
-    position:absolute; inset:0; overflow:hidden;
-    pointer-events:none; z-index:1;
-  }
+  .hearts{ position:absolute; inset:0; overflow:hidden; pointer-events:none; z-index:1; }
   .heart{
-    position:absolute; font-size: 18px; opacity:.85;
+    position:absolute; opacity:.85;
     filter: drop-shadow(0 10px 18px rgba(0,0,0,.15));
     animation: floatUp linear forwards;
     will-change: transform, opacity;
   }
   @keyframes floatUp{
-    0%{ transform: translateY(30px) scale(.9) rotate(0deg); opacity:0; }
+    0%{ transform: translate3d(0, 30px, 0) scale(.9) rotate(0deg); opacity:0; }
     10%{ opacity:.9; }
-    100%{ transform: translateY(-120vh) scale(1.4) rotate(20deg); opacity:0; }
+    100%{ transform: translate3d(0, -120vh, 0) scale(1.35) rotate(18deg); opacity:0; }
   }
 
   /* sparkles */
@@ -158,14 +169,20 @@
     background: rgba(255,255,255,.95);
     box-shadow: 0 0 16px rgba(255,255,255,.9);
     opacity:0; animation: twinkle 2.4s ease-in-out infinite;
+    will-change: transform, opacity;
   }
   @keyframes twinkle{
     0%,100%{ transform: scale(.6); opacity:0; }
     40%{ opacity:.85; }
-    60%{ transform: scale(1.3); opacity:.2; }
+    60%{ transform: scale(1.25); opacity:.2; }
   }
 
   #confettiCanvas{ position:absolute; inset:0; pointer-events:none; z-index:3; }
+
+  /* Reduce motion (por si el teléfono lo tiene activado) */
+  @media (prefers-reduced-motion: reduce){
+    *{ animation: none !important; transition: none !important; }
+  }
 </style>
 </head>
 
@@ -177,7 +194,7 @@
 
   <audio id="musica" src="corazon.mp3" preload="auto"></audio>
 
-  <div class="container" id="contenido">
+  <div class="container fadeIn" id="contenido">
     <h1>Antes de empezar… 💖</h1>
     <div class="nombre">Gerita ❤️</div>
     <div class="pill">🔊 Sube el volumen • 🎶 Parte favorita • 🥺 Promesa bonita</div>
@@ -187,16 +204,42 @@
     <div class="loveLine">Hecho con amor, sin posibilidad de escapar 😌</div>
   </div>
 
-  <!-- Botón NO global (para poder huir por toda la pantalla) -->
+  <!-- Botón NO global -->
   <button id="no">No 💔</button>
 
 <script>
-  // ===== Audio + flow =====
+  // ===== Helpers =====
   const audio = document.getElementById("musica");
   const contenido = document.getElementById("contenido");
-  const START_SECONDS = 90; // 1:30 exacto
+  const btnNoGlobal = document.getElementById("no");
+
+  const START_SECONDS = 90; // 1:30
   let tamaño = 1;
 
+  const heartsLayer = document.getElementById("hearts");
+  const sparklesLayer = document.getElementById("sparkles");
+  const heartChars = ["❤️","💖","💕","💘","💝","💗","💞"];
+
+  function rand(min, max){ return Math.random() * (max - min) + min; }
+
+  // Transición: fade out -> cambiar contenido -> fade in
+  async function swapScreen(html){
+    contenido.classList.add("fadeOut");
+    contenido.classList.remove("fadeIn");
+
+    // esperar el final de la transición (350ms)
+    await new Promise(r => setTimeout(r, 360));
+
+    contenido.innerHTML = html;
+
+    // pequeño frame para que el navegador aplique el DOM antes de animar
+    requestAnimationFrame(() => {
+      contenido.classList.remove("fadeOut");
+      contenido.classList.add("fadeIn");
+    });
+  }
+
+  // Audio seguro
   async function iniciarMusica(){
     try{
       if (audio.readyState < 1) {
@@ -211,118 +254,15 @@
     } catch(e) {}
   }
 
-  function mostrarPregunta(){
-    contenido.innerHTML = `
-      <h1>¿Quieres ser mi San Valentín? 💘</h1>
-      <div class="nombre">Gerita ❤️</div>
-      <div class="pill">💞 Te lo digo sin miedo: me encantas • ✨</div>
-      <p class="sub">
-        Si dices que <b>sí</b>, prometo cuidarte bonito…<br>
-        y hacer de ese día un recuerdo que se nos quede pegado 💖
-      </p>
-      <div class="btnRow">
-        <button id="si">Sí 💖</button>
-      </div>
-      <div class="mini">Tip: el “No” anda nervioso… míralo 😈</div>
-    `;
-
-    // Mostrar y posicionar el botón NO al entrar
-    const botonNo = document.getElementById("no");
-    botonNo.style.display = "inline-block";
-    moverNoRandom(); // primera escapada
-
-    const botonSi = document.getElementById("si");
-
-    // NO huye al acercarse (mejor para “imposible tocar”)
-    botonNo.addEventListener("mouseenter", () => { moverNoRandom(); burstHearts(8); });
-    botonNo.addEventListener("touchstart", (e) => { e.preventDefault(); moverNoRandom(); burstHearts(10); }, { passive:false });
-
-    // Si logran tocar NO (a veces), igual crece el sí
-    botonNo.addEventListener("click", () => {
-      tamaño += 0.35;
-      botonSi.style.transform = `scale(${tamaño})`;
-      burstHearts(12);
-      moverNoRandom();
-    });
-
-    botonSi.addEventListener("click", () => {
-      pantallaFinal();
-    });
-  }
-
-  function pantallaFinal(){
-    // ocultar NO para que no moleste
-    document.getElementById("no").style.display = "none";
-    launchConfetti(2200);
-    burstHearts(30);
-
-    contenido.innerHTML = `
-      <h1 class="final">
-        💕 <strong>Gerita</strong>, ya está… ahora soy la persona más feliz del mundo 💕<br><br>
-        Te espero el <strong>sábado 14 de febrero</strong> para pasar
-        el San Valentín más hermoso de todos ❤️✨
-      </h1>
-      <div class="loveLine">P.D.: Esto ya es oficialmente una cita 😌💘</div>
-    `;
-  }
-
-  document.getElementById("play").addEventListener("click", async (e) => {
-    e.target.disabled = true;
-    e.target.textContent = "💖 Sonando...";
-    await iniciarMusica();
-    mostrarPregunta();
-  });
-
-  // ===== NO escapista =====
-  function moverNoRandom(){
-    const btn = document.getElementById("no");
-    const pad = 12;
-    const w = btn.offsetWidth || 110;
-    const h = btn.offsetHeight || 50;
-
-    const maxX = window.innerWidth - w - pad;
-    const maxY = window.innerHeight - h - pad;
-
-    // Evitar caer encima del card (aprox centro), lo mandamos a zonas más “molestas”
-    let x = Math.random() * maxX;
-    let y = Math.random() * maxY;
-
-    // “empuja” fuera de un círculo central
-    const cx = window.innerWidth/2;
-    const cy = window.innerHeight/2;
-    const dx = x - cx;
-    const dy = y - cy;
-    const dist = Math.sqrt(dx*dx + dy*dy);
-    if (dist < 120) {
-      x = (x + 180) % maxX;
-      y = (y + 180) % maxY;
-    }
-
-    btn.style.left = Math.max(pad, Math.min(maxX, x)) + "px";
-    btn.style.top  = Math.max(pad, Math.min(maxY, y)) + "px";
-  }
-
-  window.addEventListener("resize", () => {
-    const btn = document.getElementById("no");
-    if (btn.style.display !== "none") moverNoRandom();
-    resizeCanvas();
-  });
-
-  // ===== Hearts + sparkles =====
-  const heartsLayer = document.getElementById("hearts");
-  const sparklesLayer = document.getElementById("sparkles");
-  const heartChars = ["❤️","💖","💕","💘","💝","💗","💞"];
-
-  function rand(min, max){ return Math.random() * (max - min) + min; }
-
+  // ===== Hearts =====
   function spawnHeart(){
     const heart = document.createElement("div");
     heart.className = "heart";
     heart.textContent = heartChars[Math.floor(Math.random()*heartChars.length)];
     heart.style.left = rand(0, 100) + "vw";
-    heart.style.bottom = "-20px";
+    heart.style.bottom = "-24px";
     heart.style.fontSize = rand(14, 26) + "px";
-    heart.style.animationDuration = rand(5.5, 10.5) + "s";
+    heart.style.animationDuration = rand(6.0, 10.5) + "s";
     heart.style.opacity = rand(.35, .95);
     heartsLayer.appendChild(heart);
 
@@ -332,15 +272,17 @@
 
   function burstHearts(n=12){
     for(let i=0;i<n;i++){
-      setTimeout(spawnHeart, i*40);
+      setTimeout(spawnHeart, i*38);
     }
   }
 
+  // Menos cantidad = más fluido
   setInterval(() => {
     if (document.visibilityState === "visible") spawnHeart();
-  }, 420);
+  }, 520);
 
-  function createSparkles(count=20){
+  // ===== Sparkles =====
+  function createSparkles(count=16){
     sparklesLayer.innerHTML = "";
     for(let i=0;i<count;i++){
       const s = document.createElement("div");
@@ -348,11 +290,11 @@
       s.style.left = rand(5, 95) + "vw";
       s.style.top  = rand(5, 95) + "vh";
       s.style.animationDelay = rand(0, 2.2) + "s";
-      s.style.transform = `scale(${rand(.6, 1.3)})`;
+      s.style.transform = `scale(${rand(.6, 1.2)})`;
       sparklesLayer.appendChild(s);
     }
   }
-  createSparkles(20);
+  createSparkles(16);
 
   // ===== Confetti =====
   const canvas = document.getElementById("confettiCanvas");
@@ -364,6 +306,12 @@
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
   }
+  window.addEventListener("resize", () => {
+    resizeCanvas();
+    if (btnNoGlobal.style.display !== "none") moverNoSuave();
+  });
+  resizeCanvas();
+
   function makePiece(){
     const colors = ["#e63946","#ff4d6d","#ffd6e0","#ffffff","#ffb3c6","#fad0c4"];
     return {
@@ -372,19 +320,19 @@
       w: rand(6, 12),
       h: rand(8, 18),
       vx: rand(-1.8, 1.8),
-      vy: rand(2.4, 5.2),
+      vy: rand(2.4, 5.0),
       rot: rand(0, Math.PI*2),
       vr: rand(-0.12, 0.12),
       color: colors[Math.floor(Math.random()*colors.length)],
       alpha: rand(0.7, 1)
     };
   }
+
   function launchConfetti(ms=1800){
     confettiPieces = [];
-    const count = 160;
+    const count = 140; // menos = más fluido
     for(let i=0;i<count;i++) confettiPieces.push(makePiece());
     confettiRunning = true;
-
     const endAt = performance.now() + ms;
 
     function tick(now){
@@ -413,7 +361,104 @@
     requestAnimationFrame(tick);
   }
 
-  resizeCanvas();
+  // ===== NO escapista (suave) =====
+  let targetX = 0, targetY = 0;
+
+  function pickNoTarget(){
+    const pad = 12;
+    const w = btnNoGlobal.offsetWidth || 110;
+    const h = btnNoGlobal.offsetHeight || 50;
+
+    const maxX = window.innerWidth - w - pad;
+    const maxY = window.innerHeight - h - pad;
+
+    let x = Math.random() * maxX;
+    let y = Math.random() * maxY;
+
+    // empuja fuera del centro
+    const cx = window.innerWidth/2;
+    const cy = window.innerHeight/2;
+    const dx = x - cx, dy = y - cy;
+    if (Math.sqrt(dx*dx + dy*dy) < 140){
+      x = (x + 200) % maxX;
+      y = (y + 220) % maxY;
+    }
+
+    targetX = Math.max(pad, Math.min(maxX, x));
+    targetY = Math.max(pad, Math.min(maxY, y));
+  }
+
+  function moverNoSuave(){
+    // translate3d para movimiento fluido (sin tocar left/top)
+    btnNoGlobal.style.transform = `translate3d(${targetX}px, ${targetY}px, 0)`;
+  }
+
+  function escaparNo(){
+    pickNoTarget();
+    moverNoSuave();
+  }
+
+  // ===== Screens =====
+  async function showPregunta(){
+    btnNoGlobal.style.display = "inline-block";
+    // El botón NO empieza posicionado en 0,0 con translate; elegimos objetivo y movemos
+    pickNoTarget();
+    requestAnimationFrame(moverNoSuave);
+
+    await swapScreen(`
+      <h1>¿Quieres ser mi San Valentín? 💘</h1>
+      <div class="nombre">Gerita ❤️</div>
+      <div class="pill">💞 Te lo digo sin miedo: me encantas • ✨</div>
+      <p class="sub">
+        Si dices que <b>sí</b>, prometo cuidarte bonito…<br>
+        y hacer de ese día un recuerdo que se nos quede pegado 💖
+      </p>
+      <div class="btnRow">
+        <button id="si">Sí 💖</button>
+      </div>
+      <div class="mini">Tip: el “No” anda nervioso… míralo 😈</div>
+    `);
+
+    const botonSi = document.getElementById("si");
+
+    // NO huye al acercarse / tocar
+    btnNoGlobal.onmouseenter = () => { escaparNo(); burstHearts(8); };
+    btnNoGlobal.ontouchstart = (e) => { e.preventDefault(); escaparNo(); burstHearts(10); };
+
+    // Si logran tocar NO (raro), crece el sí
+    btnNoGlobal.onclick = () => {
+      tamaño += 0.35;
+      botonSi.style.transform = `scale(${tamaño})`;
+      burstHearts(12);
+      escaparNo();
+    };
+
+    botonSi.onclick = () => showFinal();
+  }
+
+  async function showFinal(){
+    btnNoGlobal.style.display = "none";
+    launchConfetti(2200);
+    burstHearts(30);
+
+    await swapScreen(`
+      <h1 class="final">
+        💕 <strong>Gerita</strong>, ya está… ahora soy la persona más feliz del mundo 💕<br><br>
+        Te espero el <strong>sábado 14 de febrero</strong> para pasar
+        el San Valentín más hermoso de todos ❤️✨
+      </h1>
+      <div class="loveLine">P.D.: Esto ya es oficialmente una cita 😌💘</div>
+    `);
+  }
+
+  // ===== Play action =====
+  document.getElementById("play").addEventListener("click", async (e) => {
+    e.target.disabled = true;
+    e.target.textContent = "💖 Sonando...";
+    await iniciarMusica();
+    await showPregunta();
+  });
+
   burstHearts(10);
 </script>
 </body>
