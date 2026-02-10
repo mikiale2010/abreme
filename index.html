@@ -1,1 +1,116 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ábreme 💖</title>
+
+<style>
+  body{
+    margin:0;height:100vh;display:flex;align-items:center;justify-content:center;
+    font-family:Arial,sans-serif;text-align:center;
+    background:linear-gradient(135deg,#ff9a9e,#fad0c4);
+  }
+  .container{
+    background:white;padding:40px 25px;border-radius:20px;max-width:420px;
+    box-shadow:0 10px 25px rgba(0,0,0,.2);
+  }
+  h1{color:#e63946;margin:0 0 10px;}
+  .nombre{font-size:26px;color:#ff4d6d;font-weight:bold;margin:10px 0;}
+  .txt{color:#666;margin:0 0 18px;line-height:1.35;}
+  button{
+    padding:15px 28px;font-size:18px;border:none;border-radius:12px;
+    cursor:pointer;margin:10px;transition:.3s;
+  }
+  #play{background:#ff4d6d;color:white;}
+  #si{background:#e63946;color:white;}
+  #no{background:#adb5bd;color:white;}
+  .final{font-size:24px;color:#e63946;line-height:1.25;}
+  .mini{font-size:12px;color:#888;margin-top:10px;line-height:1.25;}
+</style>
+</head>
+
+<body>
+
+<audio id="musica" src="corazon.mp3" preload="auto"></audio>
+
+<div class="container" id="contenido">
+  <h1>Antes de empezar… 💖</h1>
+  <div class="nombre">Gerita ❤️</div>
+  <p class="txt">Toca <b>Play</b> y sube el volumen 🔊🎶</p>
+  <button id="play">▶ Play</button>
+  <div class="mini">(Si tarda 1–2 seg, es normal: está cargando la canción 🙈)</div>
+</div>
+
+<script>
+  const audio = document.getElementById("musica");
+  const contenido = document.getElementById("contenido");
+  const playBtn = document.getElementById("play");
+  const START_SECONDS = 90; // 1:30
+
+  function mostrarPregunta(){
+    contenido.innerHTML = `
+      <h1>¿Quieres ser mi San Valentín? 💘</h1>
+      <div class="nombre">Gerita ❤️</div>
+      <p class="txt">Ahora sí… dilo sin miedo 🥺✨</p>
+      <button id="si">Sí 💖</button>
+      <button id="no">No 💔</button>
+    `;
+
+    let tamaño = 1;
+    const botonSi = document.getElementById("si");
+    const botonNo = document.getElementById("no");
+
+    botonNo.addEventListener("click", () => {
+      tamaño += 0.35;
+      botonSi.style.transform = `scale(${tamaño})`;
+    });
+
+    botonSi.addEventListener("click", () => {
+      contenido.innerHTML = `
+        <h1 class="final">
+          💕 Gerita, ahora soy la persona más feliz del mundo 💕<br><br>
+          Te espero el <b>sábado 14 de febrero</b> para pasar el San Valentín
+          más hermoso de todos ❤️✨
+        </h1>
+      `;
+    });
+  }
+
+  function iniciarMusicaSeguro(){
+    // intentamos reproducir cuando el audio ya conoce duración/tiempos
+    const playNow = async () => {
+      try {
+        audio.currentTime = START_SECONDS;
+      } catch (e) {
+        // si aún no deja saltar, no rompemos la UI
+      }
+
+      try {
+        await audio.play();
+      } catch (e) {
+        // si el navegador bloquea, igual avanzamos; el usuario puede tocar play del sistema
+      }
+    };
+
+    if (audio.readyState >= 1) {
+      // ya cargó metadatos
+      playNow();
+    } else {
+      // esperamos a metadatos
+      audio.addEventListener("loadedmetadata", playNow, { once: true });
+      audio.load();
+    }
+  }
+
+  playBtn.addEventListener("click", () => {
+    playBtn.disabled = true;
+    playBtn.textContent = "⏳ Cargando...";
+    iniciarMusicaSeguro();
+    mostrarPregunta(); // Avanza sí o sí
+  });
+</script>
+
+</body>
+</html>
 
